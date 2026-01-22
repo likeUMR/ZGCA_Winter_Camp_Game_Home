@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏列表</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="list-page">
+    <!-- 顶部导航 -->
+    <div class="header">
+        <div class="back-btn" onclick="history.back()">＜</div>
+        <div class="user-card" onclick="location.href='ranking.html'">
+            <div class="rank-title" id="total-rank">排名：--</div>
+            <div class="user-info" id="display-name">姓名：--</div>
+            <div class="user-info" id="display-id">ID&nbsp;&nbsp;&nbsp;：--</div>
+        </div>
+    </div>
+
+    <h2 class="section-title">GAME LIST</h2>
+
+    <!-- 游戏卡片列表 -->
+    <div class="game-list">
+        <!-- 游戏 1 -->
+        <div class="game-card" onclick="playGame('zgca-sliding-puzzle', 'https://gallery.liruochen.cn/zgca-sliding-puzzle/')">
+            <div class="card-top">
+                <img src="images/game_thumb1.jpg" class="game-thumb">
+                <div class="game-titles">
+                    <h3>Sliding Puzzle</h3>
+                    <p class="cn-name">学院华容道</p>
+                </div>
+            </div>
+            <div class="card-bottom">
+                <div class="trophy-circle gray" id="trophy-zgca-sliding-puzzle"><img src="images/icon_trophy.svg"></div>
+                <div class="game-progress">
+                    <p class="progress-text" id="stat-zgca-sliding-puzzle">本关状态：未完成</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏 2 -->
+        <div class="game-card" onclick="playGame('craft-big-boss', 'https://gallery.liruochen.cn/craft-big-boss/')">
+            <div class="card-top">
+                <img src="images/game_thumb2.jpg" class="game-thumb">
+                <div class="game-titles">
+                    <h3>Craft Big Boss</h3>
+                    <p class="cn-name">合成刘院长</p>
+                </div>
+            </div>
+            <div class="card-bottom">
+                <div class="trophy-circle gray" id="trophy-craft-big-boss"><img src="images/icon_trophy.svg"></div>
+                <div class="game-progress">
+                    <p class="progress-text" id="stat-craft-big-boss">本关状态：未完成</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏 3 -->
+        <div class="game-card" onclick="playGame('college-link-connect', 'https://gallery.liruochen.cn/college-link-connect/')">
+            <div class="card-top">
+                <img src="images/game_thumb3.jpg" class="game-thumb">
+                <div class="game-titles">
+                    <h3>College Link Connect</h3>
+                    <p class="cn-name">高校连连看</p>
+                </div>
+            </div>
+            <div class="card-bottom">
+                <div class="trophy-circle gray" id="trophy-college-link-connect"><img src="images/icon_trophy.svg"></div>
+                <div class="game-progress">
+                    <p class="progress-text" id="stat-college-link-connect">本关状态：未完成</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全屏游戏预览层 (解决没有返回按钮的问题) -->
+    <div id="game-overlay" class="game-overlay">
+        <div class="overlay-header">
+            <span id="overlay-title" style="font-weight: bold;">正在游戏...</span>
+            <button class="exit-btn" onclick="closeGame()">返回列表</button>
+        </div>
+        <iframe id="game-frame" class="game-iframe"></iframe>
+    </div>
+
+    <script>
+        const API_BASE = 'https://leaderboard.liruochen.cn/api';
+        const userName = localStorage.getItem('game_user_name');
+        const userId = localStorage.getItem('game_user_id');
+        const GAMES = ['zgca-sliding-puzzle', 'craft-big-boss', 'college-link-connect'];
+        let gameResults = {};
+
+        if (userName && userId) {
+            document.getElementById('display-name').innerText = `姓名：${userName}`;
+            document.getElementById('display-id').innerHTML = `ID&nbsp;&nbsp;&nbsp;：${userId}`;
+        } else {
+            location.href = 'index.html';
+        }
+
+        // 核心逻辑：获取排名并根据 score 点亮进度条
+        async function fetchGameStats(gameId) {
+            try {
+                const response = await fetch(`${API_BASE}/player_score`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        game_id: gameId,
+                        user_id: userId,
+                        field_id: 'clear_time'
+                    })
+                });
+
+                if (!response.ok) throw new Error('Backend Offline');
+                const data = await response.json();
+                gameResults[gameId] = data;
+                updateGameUI(gameId, data);
+
+            } catch (e) {
+                console.warn(`[模拟模式] 无法连接到后端，正在为 ${gameId} 生成演示数据`);
+                
+                // --- 【在这里修改模拟数据】 ---
+                let mockData = { score: 0, rank: '--' };
+                if (gameId === 'zgca-sliding-puzzle') {
+                    mockData = { score: 1, rank: 5 }; 
+                } else if (gameId === 'craft-big-boss') {
+                    mockData = { score: 0, rank: '--' };
+                } else if (gameId === 'college-link-connect') {
+                    mockData = { score: 0, rank: '--' };
+                }
+                
+                gameResults[gameId] = mockData;
+                updateGameUI(gameId, mockData);
+            }
+            checkTotalRank();
+        }
+
+        // 统一的 UI 更新函数
+        function updateGameUI(gameId, data) {
+            if (data && data.score !== undefined) {
+                const score = parseInt(data.score);
+                
+                // 1. 更新状态显示
+                const statEl = document.getElementById(`stat-${gameId}`);
+                // 根据排行榜说明：score 为 1 代表已通关（TIME_SENSITIVE_FIELDS 机制）
+                if (score === 1) {
+                    statEl.innerText = `本关状态：已完成 (排名:${data.rank || '--'})`;
+                    statEl.style.color = '#ffb800';
+                } else {
+                    statEl.innerText = `本关状态：未完成`;
+                    statEl.style.color = 'white';
+                }
+
+                // 2. 只有 score 为 1 才点亮奖杯
+                const trophy = document.getElementById(`trophy-${gameId}`);
+                if (score === 1) {
+                    trophy.classList.remove('gray');
+                    trophy.classList.add('gold');
+                } else {
+                    trophy.classList.add('gray');
+                    trophy.classList.remove('gold');
+                }
+            }
+        }
+
+        async function checkTotalRank() {
+            // 检查是否所有游戏都已获取到结果
+            if (Object.keys(gameResults).length < GAMES.length) return;
+
+            const allCleared = GAMES.every(id => gameResults[id] && parseInt(gameResults[id].score) === 1);
+            const totalRankEl = document.getElementById('total-rank');
+
+            if (allCleared) {
+                 try {
+                     // 如果全部通关，尝试上传总成绩到 zgca-total
+                     // 系统会自动记录第一次上传的时间作为排名依据
+                     // 使用 姓名_ID 的格式，方便在排行榜显示姓名
+                     const combinedId = `${userName}_${userId}`;
+                     await fetch(`${API_BASE}/upload`, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify({
+                             game_id: 'zgca-total',
+                             user_id: combinedId,
+                             score: 1,
+                             field_id: 'clear_time'
+                         })
+                     });
+ 
+                     // 获取总排名
+                     const response = await fetch(`${API_BASE}/player_score`, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify({
+                             game_id: 'zgca-total',
+                             user_id: combinedId,
+                             field_id: 'clear_time'
+                         })
+                     });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        totalRankEl.innerText = `排名：${data.rank || '--'}`;
+                    }
+                } catch (e) {
+                    console.error('获取总排名失败', e);
+                    totalRankEl.innerText = `排名：--`;
+                }
+            } else {
+                totalRankEl.innerText = `排名：--`;
+            }
+        }
+
+        GAMES.forEach(fetchGameStats);
+
+        // 修改后的游戏打开逻辑：使用 Iframe 覆盖层
+        function playGame(gameId, customUrl) {
+            const baseUrl = customUrl || `${gameId}/index.html`;
+            // 按照要求使用 ?userid= 格式传参
+            const targetUrl = `${baseUrl}?userid=${encodeURIComponent(userId)}&username=${encodeURIComponent(userName)}`;
+            
+            // 设置 Iframe 地址并显示预览层
+            document.getElementById('game-frame').src = targetUrl;
+            document.getElementById('game-overlay').style.display = 'flex';
+            
+            // 锁定 body 滚动
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭预览层并刷新进度
+        function closeGame() {
+            document.getElementById('game-overlay').style.display = 'none';
+            document.getElementById('game-frame').src = ''; // 清空 iframe
+            document.body.style.overflow = 'auto'; // 恢复滚动
+            
+            // 重新拉取一次进度
+            ['zgca-sliding-puzzle', 'craft-big-boss', 'college-link-connect'].forEach(fetchGameStats);
+        }
+    </script>
+</body>
+</html>

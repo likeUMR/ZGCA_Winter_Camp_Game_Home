@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGCA GAMES - 登录</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <h1 class="logo-text">AGCA GAMES</h1>
+        <div class="input-group">
+            <input type="text" id="username" placeholder="请输入姓名">
+            <input type="text" id="userid" placeholder="请输入ID">
+            <button class="login-btn" onclick="login()">登录</button>
+        </div>
+    </div>
+    <script>
+        function login() {
+            const name = document.getElementById('username').value;
+            const id = document.getElementById('userid').value;
+            if (!name || !id) {
+                alert('请完整填写姓名和ID');
+                return;
+            }
+            localStorage.setItem('game_user_name', name);
+            localStorage.setItem('game_user_id', id);
+            location.href = 'list.html';
+        }
+    </script>
+</body>
+</html>
