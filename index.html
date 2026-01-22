@@ -11,7 +11,7 @@
         <h1 class="logo-text">ZGCA GAMES</h1>
         <div class="input-group">
             <input type="text" id="username" placeholder="请输入姓名">
-            <input type="text" id="userid" placeholder="请输入ID">
+            <input type="text" id="userid" placeholder="请输入报名号">
             <button class="login-btn" onclick="login()">登录</button>
         </div>
     </div>
@@ -20,7 +20,7 @@
             const name = document.getElementById('username').value;
             const id = document.getElementById('userid').value;
             if (!name || !id) {
-                alert('请完整填写姓名和ID');
+                alert('请完整填写姓名和报名号');
                 return;
             }
             localStorage.setItem('game_user_name', name);

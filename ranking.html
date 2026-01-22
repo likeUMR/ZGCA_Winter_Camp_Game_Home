@@ -15,7 +15,7 @@
             <thead>
                 <tr>
                     <th>排名</th>
-                    <th>准考证号</th>
+                    <th>报名号</th>
                     <th>通关时间</th>
                 </tr>
             </thead>
@@ -67,7 +67,7 @@
 
             tbody.innerHTML = players.map((player, index) => {
                 const rank = (index + 1).toString().padStart(2, '0');
-                // 直接显示准考证号 (user_id)
+                // 直接显示报名号 (user_id)
                 const userId = player.user_id;
                 
                 // 格式化时间

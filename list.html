@@ -13,7 +13,7 @@
         <div class="user-card" onclick="location.href='ranking.html'">
             <div class="rank-title" id="total-rank"><u>排名</u>：--</div>
             <div class="user-info" id="display-name">姓名：--</div>
-            <div class="user-info" id="display-id">ID&nbsp;&nbsp;&nbsp;：--</div>
+            <div class="user-info" id="display-id">报名号&nbsp;&nbsp;&nbsp;：--</div>
         </div>
     </div>
 
@@ -91,7 +91,7 @@
 
         if (userName && userId) {
             document.getElementById('display-name').innerText = `姓名：${userName}`;
-            document.getElementById('display-id').innerHTML = `ID&nbsp;&nbsp;&nbsp;：${userId}`;
+            document.getElementById('display-id').innerHTML = `报名号&nbsp;&nbsp;&nbsp;：${userId}`;
         } else {
             location.href = 'index.html';
         }
@@ -165,7 +165,7 @@
                 try {
                     // 如果全部通关，尝试上传总成绩到 zgca-total
                     // 系统会自动记录第一次上传的时间作为排名依据
-                    // 统一使用准考证号 (userId) 作为唯一标识
+                    // 统一使用报名号 (userId) 作为唯一标识
                     const uploadRes = await fetch(`${API_BASE}/upload`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
