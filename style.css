@@ -34,6 +34,11 @@ body { background-color: #0b4a63; color: white; min-height: 100vh; }
     display: flex;
     flex-direction: column;
     justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.user-card:hover {
+    background: rgba(255,255,255,0.2);
 }
 .rank-title { color: #ffb800; font-size: 24px; font-weight: bold; margin-bottom: 8px; }
 .user-info { font-size: 13px; opacity: 0.9; margin-bottom: 4px; }

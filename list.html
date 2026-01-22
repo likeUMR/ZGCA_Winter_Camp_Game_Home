@@ -11,7 +11,7 @@
     <div class="header">
         <div class="back-btn" onclick="history.back()">＜</div>
         <div class="user-card" onclick="location.href='ranking.html'">
-            <div class="rank-title" id="total-rank">排名：--</div>
+            <div class="rank-title" id="total-rank"><u>排名</u>：--</div>
             <div class="user-info" id="display-name">姓名：--</div>
             <div class="user-info" id="display-id">ID&nbsp;&nbsp;&nbsp;：--</div>
         </div>
@@ -115,13 +115,8 @@
                 updateGameUI(gameId, data);
 
             } catch (e) {
-                console.warn(`[模拟模式] 无法连接到后端，正在为 ${gameId} 生成演示数据`);
-                
-                // --- 【在这里修改模拟数据】 ---
-                let mockData = { score: 1, rank: Math.floor(Math.random() * 10) + 1 };
-                
-                gameResults[gameId] = mockData;
-                updateGameUI(gameId, mockData);
+                console.error(`获取 ${gameId} 状态失败:`, e);
+                gameResults[gameId] = {}; // 标记该游戏已查询但无结果，防止阻塞总分检查
             }
             checkTotalRank();
         }
@@ -195,17 +190,16 @@
 
                     if (response.ok) {
                         const data = await response.json();
-                        totalRankEl.innerText = `排名：${data.rank || '--'}`;
+                        totalRankEl.innerHTML = `<u>排名</u>：${data.rank || '--'}`;
                     } else {
                         throw new Error('Rank Fetch Failed');
                     }
                 } catch (e) {
-                    console.warn('后端连接失败或未配置 zgca-total，使用模拟总排名');
-                    // 模拟模式：如果全部通关，给一个随机排名
-                    totalRankEl.innerText = `排名：${Math.floor(Math.random() * 5) + 1}`;
+                    console.error('获取总排名失败:', e);
+                    totalRankEl.innerHTML = `<u>排名</u>：--`;
                 }
             } else {
-                totalRankEl.innerText = `排名：--`;
+                totalRankEl.innerHTML = `<u>排名</u>：--`;
             }
             isCheckingTotal = false;
         }

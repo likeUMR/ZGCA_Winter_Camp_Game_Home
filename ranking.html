@@ -15,7 +15,7 @@
             <thead>
                 <tr>
                     <th>排名</th>
-                    <th>姓名</th>
+                    <th>准考证号</th>
                     <th>通关时间</th>
                 </tr>
             </thead>
@@ -43,10 +43,18 @@
 
                 if (!response.ok) throw new Error('Failed to fetch');
                 const data = await response.json();
-                renderRanking(data.top_players || []);
+                
+                // 修复：API 可能直接返回数组，也可能包裹在 top_players 字段中
+                const players = Array.isArray(data) ? data : (data.top_players || []);
+                
+                if (players.length === 0) {
+                    throw new Error('No data');
+                }
+                
+                renderRanking(players);
             } catch (e) {
-                console.error('加载排行榜失败', e);
-                document.getElementById('ranking-body').innerHTML = '<tr><td colspan="3">暂无数据</td></tr>';
+                console.error('获取排行榜失败:', e);
+                renderRanking([]); // 传入空数组显示“暂无数据”
             }
         }
 
@@ -60,23 +68,30 @@
             tbody.innerHTML = players.map((player, index) => {
                 const rank = (index + 1).toString().padStart(2, '0');
                 // 直接显示准考证号 (user_id)
-                let displayName = player.user_id;
+                const userId = player.user_id;
                 
                 // 格式化时间
                 let timeStr = '--';
                 if (player.created_at) {
-                    const date = new Date(player.created_at);
-                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                    const day = date.getDate().toString().padStart(2, '0');
-                    const hours = date.getHours().toString().padStart(2, '0');
-                    const minutes = date.getMinutes().toString().padStart(2, '0');
-                    timeStr = `${month}-${day} ${hours}:${minutes}`;
+                    try {
+                        // 手动+8小时，避免时区问题
+                        const utc = new Date(player.created_at);
+                        const bj = new Date(utc.getTime() + 16 * 3600 * 1000);
+                        const m = (bj.getUTCMonth() + 1).toString().padStart(2, '0');
+                        const d = bj.getUTCDate().toString().padStart(2, '0');
+                        const h = bj.getUTCHours().toString().padStart(2, '0');
+                        const min = bj.getUTCMinutes().toString().padStart(2, '0');
+                        timeStr = `${m}-${d} ${h}:${min}`;
+                    } catch (err) {
+                        console.error('时间格式化失败', err);
+                        timeStr = '--';
+                    }
                 }
 
                 return `
                     <tr>
                         <td>${rank}</td>
-                        <td>${displayName}</td>
+                        <td>${userId}</td>
                         <td>${timeStr}</td>
                     </tr>
                 `;
