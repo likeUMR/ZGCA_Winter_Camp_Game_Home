@@ -22,9 +22,8 @@ body { background-color: #0b4a63; color: white; min-height: 100vh; }
 
 /* 列表页 */
 .list-page { padding: 20px; background-color: #0b4a63; padding-bottom: 50px; }
-.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-.back-btn { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.header { display: flex; justify-content: center; align-items: flex-start; margin-bottom: 20px; }
+.back-btn { display: none; }
 .user-card { 
     background: rgba(255,255,255,0.1); 
     padding: 10px 25px; 
@@ -42,9 +41,9 @@ body { background-color: #0b4a63; color: white; min-height: 100vh; }
 .rank-title { color: #ffb800; font-size: 20px; font-weight: bold; }
 .user-details { display: flex; flex-direction: column; gap: 2px; }
 .user-info { font-size: 12px; opacity: 0.9; }
-.section-title { text-align: center; font-size: 36px; margin: 20px 0; letter-spacing: 2px; font-weight: bold; }
+.section-title { text-align: center; font-size: 36px; margin: 80px 0 15px; letter-spacing: 2px; font-weight: bold; }
 
-.game-list { display: flex; flex-direction: column; gap: 10px; }
+.game-list { display: flex; flex-direction: column; gap: 24px; }
 .game-card {
     background: rgba(255,255,255,0.15); border-radius: 15px; padding: 10px 15px;
     display: flex; flex-direction: row; align-items: center; gap: 12px;
