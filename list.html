@@ -69,12 +69,8 @@
         </div>
     </div>
 
-    <!-- 全屏游戏预览层 (解决没有返回按钮的问题) -->
+    <!-- 全屏游戏预览层 -->
     <div id="game-overlay" class="game-overlay">
-        <div class="overlay-header">
-            <span id="overlay-title" style="font-weight: bold;">正在游戏...</span>
-            <button class="exit-btn" onclick="closeGame()">返回列表</button>
-        </div>
     </div>
 
     <script>
@@ -243,13 +239,6 @@
             
             isGameOpen = false;
             ['zgca-sliding-puzzle', 'craft-big-boss', 'college-link-connect'].forEach(fetchGameStats);
-        }
-
-        // 统一由按钮触发的返回逻辑
-        function closeGame() {
-            if (isGameOpen) {
-                history.back();
-            }
         }
 
         // 监听系统返回键（微信/浏览器）
