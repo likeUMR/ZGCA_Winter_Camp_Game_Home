@@ -12,8 +12,10 @@
         <div class="back-btn" onclick="history.back()">＜</div>
         <div class="user-card" onclick="location.href='ranking.html'">
             <div class="rank-title" id="total-rank"><u>排名</u>：--</div>
-            <div class="user-info" id="display-name">姓名：--</div>
-            <div class="user-info" id="display-id">报名号&nbsp;&nbsp;&nbsp;：--</div>
+            <div class="user-details">
+                <div class="user-info" id="display-name">姓名：--</div>
+                <div class="user-info" id="display-id">报名号&nbsp;&nbsp;&nbsp;：--</div>
+            </div>
         </div>
     </div>
 
@@ -23,53 +25,47 @@
     <div class="game-list">
         <!-- 游戏 1 -->
         <div class="game-card" onclick="playGame('zgca-sliding-puzzle', 'https://gallery.liruochen.cn/zgca-sliding-puzzle/')">
-            <div class="card-top">
-                <img src="images/game_thumb1.jpg" class="game-thumb">
+            <img src="images/game_thumb1.jpg" class="game-thumb">
+            <div class="game-info">
                 <div class="game-titles">
                     <h3>Sliding Puzzle</h3>
                     <p class="cn-name">学院华容道</p>
                 </div>
-            </div>
-            <div class="card-bottom">
-                <div class="trophy-circle gray" id="trophy-zgca-sliding-puzzle"><img src="images/icon_trophy.svg"></div>
                 <div class="game-progress">
                     <p class="progress-text" id="stat-zgca-sliding-puzzle">本关状态：未完成</p>
                 </div>
             </div>
+            <div class="trophy-circle gray" id="trophy-zgca-sliding-puzzle"><img src="images/icon_trophy.svg"></div>
         </div>
 
         <!-- 游戏 2 -->
         <div class="game-card" onclick="playGame('craft-big-boss', 'https://gallery.liruochen.cn/craft-big-boss/')">
-            <div class="card-top">
-                <img src="images/game_thumb2.jpg" class="game-thumb">
+            <img src="images/game_thumb2.jpg" class="game-thumb">
+            <div class="game-info">
                 <div class="game-titles">
                     <h3>Craft Big Boss</h3>
                     <p class="cn-name">合成院长</p>
                 </div>
-            </div>
-            <div class="card-bottom">
-                <div class="trophy-circle gray" id="trophy-craft-big-boss"><img src="images/icon_trophy.svg"></div>
                 <div class="game-progress">
                     <p class="progress-text" id="stat-craft-big-boss">本关状态：未完成</p>
                 </div>
             </div>
+            <div class="trophy-circle gray" id="trophy-craft-big-boss"><img src="images/icon_trophy.svg"></div>
         </div>
 
         <!-- 游戏 3 -->
         <div class="game-card" onclick="playGame('college-link-connect', 'https://gallery.liruochen.cn/college-link-connect/')">
-            <div class="card-top">
-                <img src="images/game_thumb3.jpg" class="game-thumb">
+            <img src="images/game_thumb3.jpg" class="game-thumb">
+            <div class="game-info">
                 <div class="game-titles">
                     <h3>College Link Connect</h3>
                     <p class="cn-name">共建高校连连看</p>
                 </div>
-            </div>
-            <div class="card-bottom">
-                <div class="trophy-circle gray" id="trophy-college-link-connect"><img src="images/icon_trophy.svg"></div>
                 <div class="game-progress">
                     <p class="progress-text" id="stat-college-link-connect">本关状态：未完成</p>
                 </div>
             </div>
+            <div class="trophy-circle gray" id="trophy-college-link-connect"><img src="images/icon_trophy.svg"></div>
         </div>
     </div>
 
@@ -130,7 +126,7 @@
                 const statEl = document.getElementById(`stat-${gameId}`);
                 // 根据排行榜说明：score 为 1 代表已通关（TIME_SENSITIVE_FIELDS 机制）
                 if (score === 1) {
-                    statEl.innerText = `本关状态：已完成 (排名:${data.rank || '--'})`;
+                    statEl.innerText = `本关状态：已完成`;
                     statEl.style.color = '#ffb800';
                 } else {
                     statEl.innerText = `本关状态：未完成`;
