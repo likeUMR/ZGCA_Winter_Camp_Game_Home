@@ -118,14 +118,7 @@
                 console.warn(`[模拟模式] 无法连接到后端，正在为 ${gameId} 生成演示数据`);
                 
                 // --- 【在这里修改模拟数据】 ---
-                let mockData = { score: 0, rank: '--' };
-                if (gameId === 'zgca-sliding-puzzle') {
-                    mockData = { score: 1, rank: 5 }; 
-                } else if (gameId === 'craft-big-boss') {
-                    mockData = { score: 0, rank: '--' };
-                } else if (gameId === 'college-link-connect') {
-                    mockData = { score: 0, rank: '--' };
-                }
+                let mockData = { score: 1, rank: Math.floor(Math.random() * 10) + 1 };
                 
                 gameResults[gameId] = mockData;
                 updateGameUI(gameId, mockData);
@@ -161,52 +154,60 @@
             }
         }
 
+        let isCheckingTotal = false;
         async function checkTotalRank() {
             // 检查是否所有游戏都已获取到结果
             if (Object.keys(gameResults).length < GAMES.length) return;
+            
+            // 防止重复触发
+            if (isCheckingTotal) return;
+            isCheckingTotal = true;
 
             const allCleared = GAMES.every(id => gameResults[id] && parseInt(gameResults[id].score) === 1);
             const totalRankEl = document.getElementById('total-rank');
 
             if (allCleared) {
-                 try {
-                     // 如果全部通关，尝试上传总成绩到 zgca-total
-                     // 系统会自动记录第一次上传的时间作为排名依据
-                     // 使用 姓名_ID 的格式，方便在排行榜显示姓名
-                     const combinedId = `${userName}_${userId}`;
-                     await fetch(`${API_BASE}/upload`, {
-                         method: 'POST',
-                         headers: { 'Content-Type': 'application/json' },
-                         body: JSON.stringify({
-                             game_id: 'zgca-total',
-                             user_id: combinedId,
-                             score: 1,
-                             field_id: 'clear_time'
-                         })
-                     });
- 
-                     // 获取总排名
-                     const response = await fetch(`${API_BASE}/player_score`, {
-                         method: 'POST',
-                         headers: { 'Content-Type': 'application/json' },
-                         body: JSON.stringify({
-                             game_id: 'zgca-total',
-                             user_id: combinedId,
-                             field_id: 'clear_time'
-                         })
-                     });
+                try {
+                    // 如果全部通关，尝试上传总成绩到 zgca-total
+                    // 系统会自动记录第一次上传的时间作为排名依据
+                    // 统一使用准考证号 (userId) 作为唯一标识
+                    const uploadRes = await fetch(`${API_BASE}/upload`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            game_id: 'zgca-total',
+                            user_id: userId,
+                            score: 1,
+                            field_id: 'clear_time'
+                        })
+                    });
+
+                    // 获取总排名
+                    const response = await fetch(`${API_BASE}/player_score`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            game_id: 'zgca-total',
+                            user_id: userId,
+                            field_id: 'clear_time'
+                        })
+                    });
 
                     if (response.ok) {
                         const data = await response.json();
                         totalRankEl.innerText = `排名：${data.rank || '--'}`;
+                    } else {
+                        throw new Error('Rank Fetch Failed');
                     }
                 } catch (e) {
-                    console.error('获取总排名失败', e);
-                    totalRankEl.innerText = `排名：--`;
+                    console.warn('后端连接失败或未配置 zgca-total，使用模拟总排名');
+                    // 模拟模式：如果全部通关，给一个随机排名
+                    totalRankEl.innerText = `排名：${Math.floor(Math.random() * 5) + 1}`;
                 }
             } else {
                 totalRankEl.innerText = `排名：--`;
             }
+            isCheckingTotal = false;
         }
 
         GAMES.forEach(fetchGameStats);

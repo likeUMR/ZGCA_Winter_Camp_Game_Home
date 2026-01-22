@@ -59,11 +59,8 @@
 
             tbody.innerHTML = players.map((player, index) => {
                 const rank = (index + 1).toString().padStart(2, '0');
-                // 假设 user_id 是 "姓名_ID" 格式，尝试提取姓名
+                // 直接显示准考证号 (user_id)
                 let displayName = player.user_id;
-                if (displayName.includes('_')) {
-                    displayName = displayName.split('_')[0];
-                }
                 
                 // 格式化时间
                 let timeStr = '--';
