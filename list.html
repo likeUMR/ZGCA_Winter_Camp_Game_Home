@@ -75,7 +75,6 @@
             <span id="overlay-title" style="font-weight: bold;">正在游戏...</span>
             <button class="exit-btn" onclick="closeGame()">返回列表</button>
         </div>
-        <iframe id="game-frame" class="game-iframe"></iframe>
     </div>
 
     <script>
@@ -202,29 +201,63 @@
 
         GAMES.forEach(fetchGameStats);
 
-        // 修改后的游戏打开逻辑：使用 Iframe 覆盖层
+        let isGameOpen = false;
+
+        // 修改后的游戏打开逻辑：动态创建 Iframe，彻底解决微信历史记录问题
         function playGame(gameId, customUrl) {
             const baseUrl = customUrl || `${gameId}/index.html`;
-            // 按照要求使用 ?userid= 格式传参
             const targetUrl = `${baseUrl}?userid=${encodeURIComponent(userId)}&username=${encodeURIComponent(userName)}`;
             
-            // 设置 Iframe 地址并显示预览层
-            document.getElementById('game-frame').src = targetUrl;
-            document.getElementById('game-overlay').style.display = 'flex';
+            const overlay = document.getElementById('game-overlay');
             
-            // 锁定 body 滚动
+            // 1. 清理旧的 iframe
+            const oldFrame = document.getElementById('game-frame');
+            if (oldFrame) oldFrame.remove();
+
+            // 2. 动态创建
+            const frame = document.createElement('iframe');
+            frame.id = 'game-frame';
+            frame.className = 'game-iframe';
+            frame.src = targetUrl;
+            overlay.appendChild(frame);
+
+            // 3. 显示 UI
+            overlay.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+            
+            if (!isGameOpen) {
+                isGameOpen = true;
+                history.pushState({ inGame: true }, "");
+            }
         }
 
-        // 关闭预览层并刷新进度
-        function closeGame() {
-            document.getElementById('game-overlay').style.display = 'none';
-            document.getElementById('game-frame').src = ''; // 清空 iframe
-            document.body.style.overflow = 'auto'; // 恢复滚动
+        // 真正的 UI 关闭和清理逻辑
+        function closeGameUI() {
+            const overlay = document.getElementById('game-overlay');
+            const frame = document.getElementById('game-frame');
+
+            overlay.style.display = 'none';
+            document.body.style.overflow = 'auto';
             
-            // 重新拉取一次进度
+            if (frame) frame.remove(); // 销毁 iframe
+            
+            isGameOpen = false;
             ['zgca-sliding-puzzle', 'craft-big-boss', 'college-link-connect'].forEach(fetchGameStats);
         }
+
+        // 统一由按钮触发的返回逻辑
+        function closeGame() {
+            if (isGameOpen) {
+                history.back();
+            }
+        }
+
+        // 监听系统返回键（微信/浏览器）
+        window.addEventListener('popstate', function(event) {
+            if (isGameOpen) {
+                closeGameUI();
+            }
+        });
     </script>
 </body>
 </html>
