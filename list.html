@@ -9,11 +9,12 @@
 <body class="list-page">
     <!-- 顶部导航 -->
     <div class="header">
-        <div class="back-btn" onclick="history.back()">＜</div>
         <div class="user-card" onclick="location.href='ranking.html'">
             <div class="rank-title" id="total-rank"><u>排名</u>：--</div>
-            <div class="user-info" id="display-name">姓名：--</div>
-            <div class="user-info" id="display-id">报名号&nbsp;&nbsp;&nbsp;：--</div>
+            <div class="user-details">
+                <div class="user-info" id="display-name">姓名：--</div>
+                <div class="user-info" id="display-id">报名号&nbsp;&nbsp;&nbsp;：--</div>
+            </div>
         </div>
     </div>
 
@@ -23,63 +24,52 @@
     <div class="game-list">
         <!-- 游戏 1 -->
         <div class="game-card" onclick="playGame('zgca-sliding-puzzle', 'https://gallery.liruochen.cn/zgca-sliding-puzzle/')">
-            <div class="card-top">
-                <img src="images/game_thumb1.jpg" class="game-thumb">
+            <img src="images/game_thumb1.jpg" class="game-thumb">
+            <div class="game-info">
                 <div class="game-titles">
                     <h3>Sliding Puzzle</h3>
                     <p class="cn-name">学院华容道</p>
                 </div>
-            </div>
-            <div class="card-bottom">
-                <div class="trophy-circle gray" id="trophy-zgca-sliding-puzzle"><img src="images/icon_trophy.svg"></div>
                 <div class="game-progress">
                     <p class="progress-text" id="stat-zgca-sliding-puzzle">本关状态：未完成</p>
                 </div>
             </div>
+            <div class="trophy-circle gray" id="trophy-zgca-sliding-puzzle"><img src="images/icon_trophy.svg"></div>
         </div>
 
         <!-- 游戏 2 -->
         <div class="game-card" onclick="playGame('craft-big-boss', 'https://gallery.liruochen.cn/craft-big-boss/')">
-            <div class="card-top">
-                <img src="images/game_thumb2.jpg" class="game-thumb">
+            <img src="images/game_thumb2.jpg" class="game-thumb">
+            <div class="game-info">
                 <div class="game-titles">
                     <h3>Craft Big Boss</h3>
                     <p class="cn-name">合成院长</p>
                 </div>
-            </div>
-            <div class="card-bottom">
-                <div class="trophy-circle gray" id="trophy-craft-big-boss"><img src="images/icon_trophy.svg"></div>
                 <div class="game-progress">
                     <p class="progress-text" id="stat-craft-big-boss">本关状态：未完成</p>
                 </div>
             </div>
+            <div class="trophy-circle gray" id="trophy-craft-big-boss"><img src="images/icon_trophy.svg"></div>
         </div>
 
         <!-- 游戏 3 -->
         <div class="game-card" onclick="playGame('college-link-connect', 'https://gallery.liruochen.cn/college-link-connect/')">
-            <div class="card-top">
-                <img src="images/game_thumb3.jpg" class="game-thumb">
+            <img src="images/game_thumb3.jpg" class="game-thumb">
+            <div class="game-info">
                 <div class="game-titles">
                     <h3>College Link Connect</h3>
                     <p class="cn-name">共建高校连连看</p>
                 </div>
-            </div>
-            <div class="card-bottom">
-                <div class="trophy-circle gray" id="trophy-college-link-connect"><img src="images/icon_trophy.svg"></div>
                 <div class="game-progress">
                     <p class="progress-text" id="stat-college-link-connect">本关状态：未完成</p>
                 </div>
             </div>
+            <div class="trophy-circle gray" id="trophy-college-link-connect"><img src="images/icon_trophy.svg"></div>
         </div>
     </div>
 
-    <!-- 全屏游戏预览层 (解决没有返回按钮的问题) -->
+    <!-- 全屏游戏预览层 -->
     <div id="game-overlay" class="game-overlay">
-        <div class="overlay-header">
-            <span id="overlay-title" style="font-weight: bold;">正在游戏...</span>
-            <button class="exit-btn" onclick="closeGame()">返回列表</button>
-        </div>
-        <iframe id="game-frame" class="game-iframe"></iframe>
     </div>
 
     <script>
@@ -130,7 +120,7 @@
                 const statEl = document.getElementById(`stat-${gameId}`);
                 // 根据排行榜说明：score 为 1 代表已通关（TIME_SENSITIVE_FIELDS 机制）
                 if (score === 1) {
-                    statEl.innerText = `本关状态：已完成 (排名:${data.rank || '--'})`;
+                    statEl.innerText = `本关状态：已完成`;
                     statEl.style.color = '#ffb800';
                 } else {
                     statEl.innerText = `本关状态：未完成`;
@@ -206,29 +196,56 @@
 
         GAMES.forEach(fetchGameStats);
 
-        // 修改后的游戏打开逻辑：使用 Iframe 覆盖层
+        let isGameOpen = false;
+
+        // 修改后的游戏打开逻辑：动态创建 Iframe，彻底解决微信历史记录问题
         function playGame(gameId, customUrl) {
             const baseUrl = customUrl || `${gameId}/index.html`;
-            // 按照要求使用 ?userid= 格式传参
             const targetUrl = `${baseUrl}?userid=${encodeURIComponent(userId)}&username=${encodeURIComponent(userName)}`;
             
-            // 设置 Iframe 地址并显示预览层
-            document.getElementById('game-frame').src = targetUrl;
-            document.getElementById('game-overlay').style.display = 'flex';
+            const overlay = document.getElementById('game-overlay');
             
-            // 锁定 body 滚动
+            // 1. 清理旧的 iframe
+            const oldFrame = document.getElementById('game-frame');
+            if (oldFrame) oldFrame.remove();
+
+            // 2. 动态创建
+            const frame = document.createElement('iframe');
+            frame.id = 'game-frame';
+            frame.className = 'game-iframe';
+            frame.src = targetUrl;
+            overlay.appendChild(frame);
+
+            // 3. 显示 UI
+            overlay.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+            
+            if (!isGameOpen) {
+                isGameOpen = true;
+                history.pushState({ inGame: true }, "");
+            }
         }
 
-        // 关闭预览层并刷新进度
-        function closeGame() {
-            document.getElementById('game-overlay').style.display = 'none';
-            document.getElementById('game-frame').src = ''; // 清空 iframe
-            document.body.style.overflow = 'auto'; // 恢复滚动
+        // 真正的 UI 关闭和清理逻辑
+        function closeGameUI() {
+            const overlay = document.getElementById('game-overlay');
+            const frame = document.getElementById('game-frame');
+
+            overlay.style.display = 'none';
+            document.body.style.overflow = 'auto';
             
-            // 重新拉取一次进度
+            if (frame) frame.remove(); // 销毁 iframe
+            
+            isGameOpen = false;
             ['zgca-sliding-puzzle', 'craft-big-boss', 'college-link-connect'].forEach(fetchGameStats);
         }
+
+        // 监听系统返回键（微信/浏览器）
+        window.addEventListener('popstate', function(event) {
+            if (isGameOpen) {
+                closeGameUI();
+            }
+        });
     </script>
 </body>
 </html>
