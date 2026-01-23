@@ -23,7 +23,7 @@
     <!-- 游戏卡片列表 -->
     <div class="game-list">
         <!-- 游戏 1 -->
-        <div class="game-card" onclick="playGame('zgca-sliding-puzzle', 'https://gallery.liruochen.cn/zgca-sliding-puzzle/')">
+        <div class="game-card" onclick="playGame('zgca-sliding-puzzle')">
             <img src="images/game_thumb1.jpg" class="game-thumb">
             <div class="game-info">
                 <div class="game-titles">
@@ -78,6 +78,12 @@
         const userId = localStorage.getItem('game_user_id');
         const GAMES = ['zgca-sliding-puzzle', 'craft-big-boss', 'college-link-connect'];
         let gameResults = {};
+
+        // 自动识别环境：本地测试使用 8080 端口，生产环境使用相对路径
+        const isLocalTest = window.location.hostname === '10.100.69.19';
+        const LOCAL_GAME_URLS = isLocalTest ? {
+            'zgca-sliding-puzzle': 'http://10.100.69.19:8080/'
+        } : {};
 
         if (userName && userId) {
             document.getElementById('display-name').innerText = `姓名：${userName}`;
@@ -200,8 +206,15 @@
 
         // 修改后的游戏打开逻辑：动态创建 Iframe，彻底解决微信历史记录问题
         function playGame(gameId, customUrl) {
-            const baseUrl = customUrl || `${gameId}/index.html`;
-            const targetUrl = `${baseUrl}?userid=${encodeURIComponent(userId)}&username=${encodeURIComponent(userName)}`;
+            // 优先级：手动传入 > 本地映射(LOCAL_GAME_URLS) > 相对路径
+            let baseUrl = customUrl || LOCAL_GAME_URLS[gameId] || `${gameId}/index.html`;
+            
+            // 如果 baseUrl 不以 http 开头且不是以 / 结尾，补充 index.html
+            if (!baseUrl.startsWith('http') && !baseUrl.endsWith('.html')) {
+                baseUrl = baseUrl.endsWith('/') ? baseUrl + 'index.html' : baseUrl + '/index.html';
+            }
+            
+            const targetUrl = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}userid=${encodeURIComponent(userId)}&username=${encodeURIComponent(userName)}`;
             
             const overlay = document.getElementById('game-overlay');
             
