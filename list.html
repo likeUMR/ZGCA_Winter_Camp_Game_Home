@@ -23,7 +23,7 @@
     <!-- 游戏卡片列表 -->
     <div class="game-list">
         <!-- 游戏 1 -->
-        <div class="game-card" onclick="playGame('zgca-sliding-puzzle')">
+        <div class="game-card" onclick="playGame('zgca-sliding-puzzle', 'https://gallery.liruochen.cn/zgca-sliding-puzzle/')">
             <img src="images/game_thumb1.jpg" class="game-thumb">
             <div class="game-info">
                 <div class="game-titles">
@@ -206,8 +206,13 @@
 
         // 修改后的游戏打开逻辑：动态创建 Iframe，彻底解决微信历史记录问题
         function playGame(gameId, customUrl) {
-            // 优先级：手动传入 > 本地映射(LOCAL_GAME_URLS) > 相对路径
-            let baseUrl = customUrl || LOCAL_GAME_URLS[gameId] || `${gameId}/index.html`;
+            // 核心逻辑优化：
+            // 1. 如果是本地环境且配置了映射，强制走本地端口 (LOCAL_GAME_URLS)
+            // 2. 否则走手动传入的正式链接 (customUrl)
+            // 3. 最后才尝试默认路径
+            let baseUrl = (isLocalTest && LOCAL_GAME_URLS[gameId]) 
+                ? LOCAL_GAME_URLS[gameId] 
+                : (customUrl || `${gameId}/index.html`);
             
             // 如果 baseUrl 不以 http 开头且不是以 / 结尾，补充 index.html
             if (!baseUrl.startsWith('http') && !baseUrl.endsWith('.html')) {
